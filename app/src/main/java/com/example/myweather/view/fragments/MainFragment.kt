@@ -9,14 +9,22 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.example.myweather.R
 import com.example.myweather.databinding.FragmentMainBinding
 import com.example.myweather.utils.isPermissionGranted
+import com.example.myweather.view.adapters.ViewPagerAdapter
+import com.google.android.material.tabs.TabLayoutMediator
 
 
 class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
+
+    private val fragmentList = listOf<Fragment>(
+        DayHoursFragment.newInstance(),
+        NextDaysFragment.newInstance()
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,7 +37,25 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         checkedUserPermissionsInList()
+        initViewPager()
     }
+
+    private fun initViewPager() {
+        var viewPagerAdapter = ViewPagerAdapter(activity as AppCompatActivity, fragmentList)
+            binding.viewPager.adapter = viewPagerAdapter
+
+
+         val tabItemList = listOf(
+            getString(R.string.tab_item_day_hours),
+            getString(R.string.tab_item_next_days)
+        )
+
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) {
+            tabItem, position -> tabItem.text = tabItemList[position]
+        }.attach()
+
+    }
+
 
     private fun checkedAnswerUserPermissionsDialog() {
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
