@@ -1,8 +1,6 @@
 package com.example.myweather.data
 
-
-
-data class MainElementData(
+data class RecyclerElementModel(
     val nameCity: String,
     val timeDate: String,
     val condition: String,
@@ -10,6 +8,4 @@ data class MainElementData(
     val tempCurrent: String,
     val tempMax: String,
     val tempMin: String,
-    val allHour: String
-
-    )
+)

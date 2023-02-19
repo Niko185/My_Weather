@@ -2,8 +2,14 @@ package com.example.myweather.vm
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.myweather.data.MainModel
 
 class MainViewModel : ViewModel() {
-    //val currentLiveData: MutableLiveData<String>()
-    //val listLiveData: MutableLiveData<String>()
+
+    // Текушая моделька
+  //  val currentLiveData: MutableLiveData<MainModel>()
+
+
+    // Сформированные модельки
+  //  val listLiveData: MutableLiveData<List<MainModel>>()
 }
