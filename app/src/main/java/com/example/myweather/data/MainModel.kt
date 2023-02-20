@@ -4,7 +4,7 @@ package com.example.myweather.data
 
 data class MainModel(
     val nameCity: String,
-    val timeDate: String,
+    val date: String,
     val condition: String,
     val imageCondition: String,
     val tempCurrent: String,

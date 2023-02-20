@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -15,10 +14,13 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.myweather.R
+import com.example.myweather.data.MainModel
 import com.example.myweather.databinding.FragmentMainBinding
 import com.example.myweather.utils.isPermissionGranted
 import com.example.myweather.view.adapters.ViewPagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
+import org.json.JSONObject
+
 const val API_KEY = "99227bc267bb4ce8a9080001231402"
 
 class MainFragment : Fragment() {
@@ -30,6 +32,7 @@ class MainFragment : Fragment() {
         NextDaysFragment.newInstance()
     )
 
+    // Override Functions
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -40,11 +43,12 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        checkedUserPermissionsInList()
+        checkPresencePermissionUser()
         initViewPager()
         requestWeatherApi("London")
     }
 
+    // API Functions
     private fun requestWeatherApi(city: String) {
         val url = "https://api.weatherapi.com/v1/forecast.json?key=" +
                 API_KEY +
@@ -58,12 +62,61 @@ class MainFragment : Fragment() {
         val mainRequest = StringRequest(
             Request.Method.GET,
             url,
-            { result -> Log.d("MyLog", "result MainRequest: $result") },
+            { result -> extractApiInstance(result) },
             { error -> Log.d("MyLog", "error MainRequest: $error") }
         )
         queue.add(mainRequest)
     }
 
+    private fun extractApiInstance(result: String) {
+        val mainJsonObject = JSONObject(result)
+
+        val completedForecastList = getForecastDaysModel(mainJsonObject)
+
+        formModelDataForHead(mainJsonObject, completedForecastList[0])
+    }
+
+
+    private fun formModelDataForHead(mainJsonObjectInstance: JSONObject, completedForecastList: MainModel) {
+
+        val headModel = MainModel(
+            mainJsonObjectInstance.getJSONObject("location").getString("name"),
+            mainJsonObjectInstance.getJSONObject("current").getString("last_updated"),
+            mainJsonObjectInstance.getJSONObject("current").getJSONObject("condition").getString("text"),
+            mainJsonObjectInstance.getJSONObject("current").getJSONObject("condition").getString("icon"),
+            mainJsonObjectInstance.getJSONObject("current").getString("temp_c"),
+            completedForecastList.tempMax,
+            completedForecastList.tempMin,
+            completedForecastList.HoursCurrentDay
+        )
+        Log.d("Mylog", "TempMin: ${headModel.tempMin}")
+    }
+
+    private fun getForecastDaysModel(mainJsonObjectInstance: JSONObject): List<MainModel> {
+        val forecastModelList = ArrayList<MainModel>()
+
+        // Массив в котором хранятся данные о прогнозе дней по индексу.
+        val arrayForecastDays = mainJsonObjectInstance.getJSONObject("forecast").getJSONArray("forecastday")
+        for(index in 0 until arrayForecastDays.length()) {
+            val dayJsonObjectInstance = arrayForecastDays[index] as JSONObject
+
+            val forecastModel = MainModel(
+                mainJsonObjectInstance.getJSONObject("location").getString("name"),
+                dayJsonObjectInstance.getString("date"),
+                dayJsonObjectInstance.getJSONObject("day").getJSONObject("condition").getString("text"),
+                dayJsonObjectInstance.getJSONObject("day").getJSONObject("condition").getString("icon"),
+                "",
+                dayJsonObjectInstance.getJSONObject("day").getString("maxtemp_c"),
+                dayJsonObjectInstance.getJSONObject("day").getString("mintemp_c"),
+                dayJsonObjectInstance.getJSONArray("hour").toString()
+                )
+            forecastModelList.add(forecastModel)
+        }
+        return forecastModelList
+    }
+
+
+    // ViewPager Functions
     private fun initViewPager() {
         var viewPagerAdapter = ViewPagerAdapter(activity as AppCompatActivity, fragmentList)
             binding.viewPager.adapter = viewPagerAdapter
@@ -81,21 +134,26 @@ class MainFragment : Fragment() {
     }
 
 
-    private fun checkedAnswerUserPermissionsDialog() {
-        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-        Toast.makeText(activity, "User Answer - $it - true or false if(true) // code else //code", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun checkedUserPermissionsInList() {
+    // Permissions Functions
+    private fun checkPresencePermissionUser() {
         if(!isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            checkedAnswerUserPermissionsDialog()
+            checkResponseUserPermissionsDialog()
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
 
+    private fun checkResponseUserPermissionsDialog() {
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        Log.d("MyLog", "User Answer this: $it")
+        }
+    }
+
+    // Instance Fragment
     companion object {
         @JvmStatic
-        fun fragInstance() = MainFragment()
+        fun newInstance() = MainFragment()
+
+
+
     }
 }
