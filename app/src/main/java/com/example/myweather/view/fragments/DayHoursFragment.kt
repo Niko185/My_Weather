@@ -39,7 +39,7 @@ class DayHoursFragment : Fragment() {
         val listModel = listOf(
             MainModel(
                 "",
-                "15.05.2023",
+                "00:00",
                 "Sunny",
                 "",
                 "10°",
@@ -49,7 +49,7 @@ class DayHoursFragment : Fragment() {
             ),
             MainModel(
                 "",
-                "15.05.2023",
+                "01:00",
                 "Sunny",
                 "",
                 "15°",
@@ -59,7 +59,7 @@ class DayHoursFragment : Fragment() {
             ),
             MainModel(
                 "",
-                "15.05.2023",
+                "02:00",
                 "Rain",
                 "",
                 "20°",

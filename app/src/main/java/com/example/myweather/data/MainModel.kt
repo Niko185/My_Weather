@@ -10,6 +10,6 @@ data class MainModel(
     val tempCurrent: String,
     val tempMax: String,
     val tempMin: String,
-    val HoursCurrentDay: String
+    val hoursCurrentDay: String
     )
 

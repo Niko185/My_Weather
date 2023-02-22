@@ -62,57 +62,63 @@ class MainFragment : Fragment() {
         val mainRequest = StringRequest(
             Request.Method.GET,
             url,
-            { result -> extractApiInstance(result) },
+            { response -> parsingApi(response) },
             { error -> Log.d("MyLog", "error MainRequest: $error") }
         )
         queue.add(mainRequest)
     }
 
-    private fun extractApiInstance(result: String) {
-        val mainJsonObject = JSONObject(result)
+    private fun parsingApi(response: String) {
+        val fullJsonObject = JSONObject(response)
 
-        val completedForecastList = getForecastDaysModel(mainJsonObject)
+        val daysModelListForecast  = getForecastDaysModel(fullJsonObject)
 
-        formModelDataForHead(mainJsonObject, completedForecastList[0])
+         getModelHeadItem(fullJsonObject, daysModelListForecast[0])
+
+
     }
 
-
-    private fun formModelDataForHead(mainJsonObjectInstance: JSONObject, completedForecastList: MainModel) {
+    // dayModel from daysModelListForecast[0] - [0] position == currentDay.
+    private fun getModelHeadItem(fullJsonObject: JSONObject, dayModel: MainModel) {
 
         val headModel = MainModel(
-            mainJsonObjectInstance.getJSONObject("location").getString("name"),
-            mainJsonObjectInstance.getJSONObject("current").getString("last_updated"),
-            mainJsonObjectInstance.getJSONObject("current").getJSONObject("condition").getString("text"),
-            mainJsonObjectInstance.getJSONObject("current").getJSONObject("condition").getString("icon"),
-            mainJsonObjectInstance.getJSONObject("current").getString("temp_c"),
-            completedForecastList.tempMax,
-            completedForecastList.tempMin,
-            completedForecastList.HoursCurrentDay
+            fullJsonObject.getJSONObject("location").getString("name"),
+            fullJsonObject.getJSONObject("current").getString("last_updated"),
+            fullJsonObject.getJSONObject("current").getJSONObject("condition").getString("text"),
+            fullJsonObject.getJSONObject("current").getJSONObject("condition").getString("icon"),
+            fullJsonObject.getJSONObject("current").getString("temp_c"),
+            dayModel.tempMax,
+            dayModel.tempMin,
+            dayModel.hoursCurrentDay
         )
         Log.d("Mylog", "TempMin: ${headModel.tempMin}")
     }
 
-    private fun getForecastDaysModel(mainJsonObjectInstance: JSONObject): List<MainModel> {
-        val forecastModelList = ArrayList<MainModel>()
 
-        // Массив в котором хранятся данные о прогнозе дней по индексу.
-        val arrayForecastDays = mainJsonObjectInstance.getJSONObject("forecast").getJSONArray("forecastday")
+    private fun getForecastDaysModel(fullJsonObject: JSONObject): List<MainModel> {
+        val dayModelList = ArrayList<MainModel>()
+
+
+        val arrayForecastDays = fullJsonObject.getJSONObject("forecast").getJSONArray("forecastday")
         for(index in 0 until arrayForecastDays.length()) {
-            val dayJsonObjectInstance = arrayForecastDays[index] as JSONObject
 
-            val forecastModel = MainModel(
-                mainJsonObjectInstance.getJSONObject("location").getString("name"),
-                dayJsonObjectInstance.getString("date"),
-                dayJsonObjectInstance.getJSONObject("day").getJSONObject("condition").getString("text"),
-                dayJsonObjectInstance.getJSONObject("day").getJSONObject("condition").getString("icon"),
+            // One Forecast Day from Array - in "oneDayJsonObject" - является объектом на уровне представления Json.
+            val oneDayJsonObject = arrayForecastDays[index] as JSONObject
+
+
+            val dayModel = MainModel(
+                fullJsonObject.getJSONObject("location").getString("name"),
+                oneDayJsonObject.getString("date"),
+                oneDayJsonObject.getJSONObject("day").getJSONObject("condition").getString("text"),
+                oneDayJsonObject.getJSONObject("day").getJSONObject("condition").getString("icon"),
                 "",
-                dayJsonObjectInstance.getJSONObject("day").getString("maxtemp_c"),
-                dayJsonObjectInstance.getJSONObject("day").getString("mintemp_c"),
-                dayJsonObjectInstance.getJSONArray("hour").toString()
+                oneDayJsonObject.getJSONObject("day").getString("maxtemp_c"),
+                oneDayJsonObject.getJSONObject("day").getString("mintemp_c"),
+                oneDayJsonObject.getJSONArray("hour").toString()
                 )
-            forecastModelList.add(forecastModel)
+            dayModelList.add(dayModel)
         }
-        return forecastModelList
+        return dayModelList
     }
 
 
@@ -152,8 +158,12 @@ class MainFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance() = MainFragment()
+    }
 
 
 
+    private fun test(fullJsonObject: JSONObject){
+        val arrayForecastDays = fullJsonObject.getJSONObject("forecast").getJSONArray("forecastday")
+        Log.d("MyLog", "this: $arrayForecastDays")
     }
 }
