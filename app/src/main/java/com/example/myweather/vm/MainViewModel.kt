@@ -6,10 +6,7 @@ import com.example.myweather.data.MainModel
 
 class MainViewModel : ViewModel() {
 
-    // Текушая моделька
-  //  val currentLiveData: MutableLiveData<MainModel>()
+    val currentLiveDataForHeadItem = MutableLiveData<MainModel>()
 
-
-    // Сформированные модельки
-  //  val listLiveData: MutableLiveData<List<MainModel>>()
+    val forecastLiveDataForListsItems = MutableLiveData<List<MainModel>>()
 }

@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewModelScope
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -18,7 +20,9 @@ import com.example.myweather.data.MainModel
 import com.example.myweather.databinding.FragmentMainBinding
 import com.example.myweather.utils.isPermissionGranted
 import com.example.myweather.view.adapters.ViewPagerAdapter
+import com.example.myweather.vm.MainViewModel
 import com.google.android.material.tabs.TabLayoutMediator
+import com.squareup.picasso.Picasso
 import org.json.JSONObject
 
 const val API_KEY = "99227bc267bb4ce8a9080001231402"
@@ -26,6 +30,7 @@ const val API_KEY = "99227bc267bb4ce8a9080001231402"
 class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private val fragmentList = listOf<Fragment>(
         DayHoursFragment.newInstance(),
@@ -45,10 +50,32 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         checkPresencePermissionUser()
         initViewPager()
-        requestWeatherApi("London")
+        observerMainViewModel()
+        requestWeatherApi("Perm")
     }
 
-    // API Functions
+    // Observer and MainViewModel Functions.
+
+    // Return headModel from ViewModel And add data in HeadItem UserScreen
+    private fun observerMainViewModel() = with(binding) {
+        mainViewModel.currentLiveDataForHeadItem.observe(viewLifecycleOwner) {
+
+            val tempMinMax = "${it.tempMin} / ${it.tempMax}"
+            val imageCondition = "https:${it.imageCondition}"
+
+            textMainTemperature.text = it.tempCurrent
+            textDayData.text = it.date
+            textCity.text = it.nameCity
+            textCondition.text = it.condition
+            textInterval.text = tempMinMax
+            Picasso.get().load(imageCondition).into(imageViewCondition)
+
+
+        }
+    }
+
+
+    // API Functions and Send DataModel in ViewModel
     private fun requestWeatherApi(city: String) {
         val url = "https://api.weatherapi.com/v1/forecast.json?key=" +
                 API_KEY +
@@ -74,11 +101,9 @@ class MainFragment : Fragment() {
         val daysModelListForecast  = getForecastDaysModel(fullJsonObject)
 
          getModelHeadItem(fullJsonObject, daysModelListForecast[0])
-
-
     }
 
-    // dayModel from daysModelListForecast[0] - [0] position == currentDay.
+    // dayModel from daysModelListForecast[0] - [0] position == currentDay. And send headModel in ViewModel
     private fun getModelHeadItem(fullJsonObject: JSONObject, dayModel: MainModel) {
 
         val headModel = MainModel(
@@ -91,7 +116,7 @@ class MainFragment : Fragment() {
             dayModel.tempMin,
             dayModel.hoursCurrentDay
         )
-        Log.d("Mylog", "TempMin: ${headModel.tempMin}")
+        mainViewModel.currentLiveDataForHeadItem.value =  headModel
     }
 
 
