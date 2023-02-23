@@ -5,15 +5,19 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweather.data.MainModel
 import com.example.myweather.databinding.FragmentDayHoursBinding
 import com.example.myweather.view.adapters.HoursDayAdapter
+import com.example.myweather.vm.MainViewModel
 
 class DayHoursFragment : Fragment() {
     private lateinit var binding: FragmentDayHoursBinding
     private lateinit var myAdapter: HoursDayAdapter
+    private val mainViewModel: MainViewModel by activityViewModels()
 
+    // Base Functions
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -24,52 +28,22 @@ class DayHoursFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        init()
-        observer()
+        initRecyclerView()
+        observerMainViewModelAndAdapterRecyclerView()
     }
-    private fun init() = with(binding) {
+
+    // Recycler View Functions
+
+    // Initialization rcView and his adapter
+    private fun initRecyclerView() = with(binding) {
         recyclerView.layoutManager = LinearLayoutManager(activity)
         myAdapter = HoursDayAdapter()
         recyclerView.adapter = myAdapter
 
     }
 
-    private fun observer() {
+    private fun observerMainViewModelAndAdapterRecyclerView() {
 
-        val listModel = listOf(
-            MainModel(
-                "",
-                "00:00",
-                "Sunny",
-                "",
-                "10°",
-                "",
-                "",
-                "10:00"
-            ),
-            MainModel(
-                "",
-                "01:00",
-                "Sunny",
-                "",
-                "15°",
-                "",
-                "",
-                "15:00",
-            ),
-            MainModel(
-                "",
-                "02:00",
-                "Rain",
-                "",
-                "20°",
-                "",
-                "",
-                "20:00"
-        )
-
-        )
-        myAdapter.submitList(listModel)
     }
 
     companion object {
