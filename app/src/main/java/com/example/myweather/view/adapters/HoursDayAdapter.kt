@@ -27,7 +27,7 @@ class HoursDayAdapter : ListAdapter<MainModel, HoursDayAdapter.ItemHolder>(ItemC
         private val binding = ItemPagerBinding.bind(view)
 
         fun setData(model: MainModel) = with(binding) {
-            textData.text = model.timeDate
+            textData.text = model.date
             textCondition.text = model.condition
             textInfo.text = model.tempCurrent
 
