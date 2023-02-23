@@ -10,6 +10,7 @@ import com.example.myweather.R
 import com.example.myweather.data.MainModel
 
 import com.example.myweather.databinding.ItemPagerBinding
+import com.squareup.picasso.Picasso
 
 
 class HoursDayAdapter : ListAdapter<MainModel, HoursDayAdapter.ItemHolder>(ItemComparator()) {
@@ -27,9 +28,12 @@ class HoursDayAdapter : ListAdapter<MainModel, HoursDayAdapter.ItemHolder>(ItemC
         private val binding = ItemPagerBinding.bind(view)
 
         fun setData(model: MainModel) = with(binding) {
+            val imageCondition = "https:${model.imageCondition}"
+
             textData.text = model.date
             textCondition.text = model.condition
             textInfo.text = model.tempCurrent
+            Picasso.get().load(imageCondition).into(imageViewCondition)
 
         }
     }

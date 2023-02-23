@@ -23,13 +23,14 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/headCard"
+        Of="@+id/backgroundImage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         app:cardCornerRadius="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/backgroundImage">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -107,20 +108,18 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_refresh_24dp"
-                app:layout_constraintBottom_toBottomOf="@+id/buttonSearch"
                 app:layout_constraintEnd_toEndOf="@+id/imageViewCondition"
-                app:layout_constraintTop_toTopOf="@+id/buttonSearch"
+                app:layout_constraintTop_toBottomOf="@+id/imageViewCondition"
                 tools:ignore="SpeakableTextPresentCheck" />
 
             <ImageButton
                 android:id="@+id/buttonSearch"
-                tools:ignore="SpeakableTextPresentCheck"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginTop="10dp"
                 android:src="@drawable/ic_search_24dp"
                 app:layout_constraintStart_toStartOf="@+id/imageViewCondition"
-                app:layout_constraintTop_toBottomOf="@+id/imageViewCondition" />
+                app:layout_constraintTop_toBottomOf="@+id/imageViewCondition"
+                tools:ignore="SpeakableTextPresentCheck" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -162,12 +161,11 @@
         android:id="@+id/viewPager"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

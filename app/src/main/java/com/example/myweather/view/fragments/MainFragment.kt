@@ -52,6 +52,7 @@ class MainFragment : Fragment() {
         initViewPager()
         observerMainViewModel()
         requestWeatherApi("Perm")
+
     }
 
     // Observer and MainViewModel Functions.
@@ -185,10 +186,4 @@ class MainFragment : Fragment() {
         fun newInstance() = MainFragment()
     }
 
-
-
-    private fun test(fullJsonObject: JSONObject){
-        val arrayForecastDays = fullJsonObject.getJSONObject("forecast").getJSONArray("forecastday")
-        Log.d("MyLog", "this: $arrayForecastDays")
-    }
 }
