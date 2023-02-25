@@ -1,7 +1,6 @@
 package com.example.myweather.view.fragments
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,14 +9,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweather.data.MainModel
 import com.example.myweather.databinding.FragmentDayHoursBinding
-import com.example.myweather.view.adapters.HoursDayAdapter
+import com.example.myweather.view.adapters.WeatherAdapter
 import com.example.myweather.vm.MainViewModel
 import org.json.JSONArray
 import org.json.JSONObject
 
 class DayHoursFragment : Fragment() {
     private lateinit var binding: FragmentDayHoursBinding
-    private lateinit var myAdapter: HoursDayAdapter
+    private lateinit var myAdapter: WeatherAdapter
     private val mainViewModel: MainViewModel by activityViewModels()
 
     // Base Functions
@@ -40,7 +39,7 @@ class DayHoursFragment : Fragment() {
     // Initialization rcView and his adapter
     private fun initRecyclerView() = with(binding) {
         recyclerView.layoutManager = LinearLayoutManager(activity)
-        myAdapter = HoursDayAdapter()
+        myAdapter = WeatherAdapter(null)
         recyclerView.adapter = myAdapter
 
     }
@@ -58,12 +57,14 @@ class DayHoursFragment : Fragment() {
 
 
         for(index in 0 until hoursArrayJson.length()) {
+            var currentTemp = (hoursArrayJson[index] as JSONObject).getString("temp_c")
+
             val hoursModel = MainModel(
                 "",
                 (hoursArrayJson[index] as JSONObject).getString("time"),
                 (hoursArrayJson[index] as JSONObject).getJSONObject("condition").getString("text"),
                 (hoursArrayJson[index] as JSONObject).getJSONObject("condition").getString("icon"),
-                (hoursArrayJson[index] as JSONObject).getString("temp_c"),
+                getFormatterResult(currentTemp),
                 "" ,
                 "",
                 ""
@@ -71,6 +72,11 @@ class DayHoursFragment : Fragment() {
             hoursListExtractArray.add(hoursModel)
         }
         return hoursListExtractArray
+    }
+
+    private fun getFormatterResult(string: String): String {
+        val result = string.toDouble().toInt()
+        return result.toString()
     }
 
     companion object {

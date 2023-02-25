@@ -11,7 +11,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.viewModelScope
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -51,7 +50,7 @@ class MainFragment : Fragment() {
         checkPresencePermissionUser()
         initViewPager()
         observerMainViewModel()
-        requestWeatherApi("Perm")
+        setRequestWeatherApi("Perm")
 
     }
 
@@ -64,11 +63,11 @@ class MainFragment : Fragment() {
             val tempMinMax = "${it.tempMin} / ${it.tempMax}"
             val imageCondition = "https:${it.imageCondition}"
 
-            textMainTemperature.text = it.tempCurrent
+            textMainTemperature.text = it.tempCurrent.ifEmpty { tempMinMax }
             textDayData.text = it.date
             textCity.text = it.nameCity
             textCondition.text = it.condition
-            textInterval.text = tempMinMax
+            textInterval.text = if(it.tempCurrent.isEmpty()) "" else tempMinMax
             Picasso.get().load(imageCondition).into(imageViewCondition)
 
 
@@ -77,7 +76,7 @@ class MainFragment : Fragment() {
 
 
     // API Functions and Send DataModel in ViewModel
-    private fun requestWeatherApi(city: String) {
+    private fun setRequestWeatherApi(city: String) {
         val url = "https://api.weatherapi.com/v1/forecast.json?key=" +
                 API_KEY +
                 "&q=" +
@@ -107,12 +106,13 @@ class MainFragment : Fragment() {
     // dayModel from daysModelListForecast[0] - [0] position == currentDay. And send headModel in ViewModel
     private fun getModelHeadItem(fullJsonObject: JSONObject, dayModel: MainModel) {
 
+        var currentTemp = fullJsonObject.getJSONObject("current").getString("temp_c")
         val headModel = MainModel(
             fullJsonObject.getJSONObject("location").getString("name"),
             fullJsonObject.getJSONObject("current").getString("last_updated"),
             fullJsonObject.getJSONObject("current").getJSONObject("condition").getString("text"),
             fullJsonObject.getJSONObject("current").getJSONObject("condition").getString("icon"),
-            fullJsonObject.getJSONObject("current").getString("temp_c"),
+            getFormatterResult(currentTemp),
             dayModel.tempMax,
             dayModel.tempMin,
             dayModel.hoursCurrentDay
@@ -130,7 +130,8 @@ class MainFragment : Fragment() {
 
             // One Forecast Day from Array - in "oneDayJsonObject" - является объектом на уровне представления Json.
             val oneDayJsonObject = arrayForecastDays[index] as JSONObject
-
+           val maxTemp = oneDayJsonObject.getJSONObject("day").getString("maxtemp_c")
+            val minTemp = oneDayJsonObject.getJSONObject("day").getString("mintemp_c")
 
             val dayModel = MainModel(
                 fullJsonObject.getJSONObject("location").getString("name"),
@@ -138,13 +139,19 @@ class MainFragment : Fragment() {
                 oneDayJsonObject.getJSONObject("day").getJSONObject("condition").getString("text"),
                 oneDayJsonObject.getJSONObject("day").getJSONObject("condition").getString("icon"),
                 "",
-                oneDayJsonObject.getJSONObject("day").getString("maxtemp_c"),
-                oneDayJsonObject.getJSONObject("day").getString("mintemp_c"),
+                getFormatterResult(maxTemp),
+                getFormatterResult(minTemp),
                 oneDayJsonObject.getJSONArray("hour").toString()
                 )
             dayModelList.add(dayModel)
         }
+        mainViewModel.forecastLiveDataForListsItems.value = dayModelList // так передали данные в mainViewModel в переменную а уже потом отдуда на другой фрагмент.
         return dayModelList
+    }
+
+    private fun getFormatterResult(string: String): String {
+        val result = string.toDouble().toInt()
+        return result.toString()
     }
 
 
