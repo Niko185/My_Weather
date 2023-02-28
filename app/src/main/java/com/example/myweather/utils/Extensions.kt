@@ -6,6 +6,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 
 // Экстеншен Функция для фрагментов. Есть разрешение на переданное разрешение или нету?
-fun Fragment.isPermissionGranted(namePermission: String): Boolean {
+fun Fragment.permissionGranted(namePermission: String): Boolean {
     return ContextCompat.checkSelfPermission(activity as AppCompatActivity, namePermission) == PackageManager.PERMISSION_GRANTED
 }
