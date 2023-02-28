@@ -1,7 +1,6 @@
 package com.example.myweather.view.fragments
 
 import android.Manifest
-import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,11 +24,11 @@ import com.example.myweather.R
 import com.example.myweather.data.MainModel
 import com.example.myweather.databinding.FragmentMainBinding
 import com.example.myweather.utils.GpsDialog
+import com.example.myweather.utils.SearchDialog
 import com.example.myweather.utils.permissionGranted
 import com.example.myweather.view.adapters.ViewPagerAdapter
 import com.example.myweather.vm.MainViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -58,14 +57,19 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initLocation()
+        initLocationService()
         checkPresencePermissionUser()
         initViewPager()
         observerMainViewModel()
         onClickUpdate()
         onClickSearch()
-
     }
+
+    override fun onResume() {
+        super.onResume()
+        setMyLocationNow()
+    }
+
 
     // Observer and MainViewModel Functions.
 
@@ -82,8 +86,6 @@ class MainFragment : Fragment() {
             textCondition.text = it.condition
             textInterval.text = if(it.tempCurrent.isEmpty()) "" else tempMinMax
             Picasso.get().load(imageCondition).into(imageViewCondition)
-
-
         }
     }
 
@@ -132,7 +134,6 @@ class MainFragment : Fragment() {
         )
         mainViewModel.currentLiveDataForHeadItem.value =  headModel
     }
-
 
     private fun getForecastDaysModel(fullJsonObject: JSONObject): List<MainModel> {
         val dayModelList = ArrayList<MainModel>()
@@ -185,36 +186,52 @@ class MainFragment : Fragment() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        bridgeInterface()
-    }
 
-    private fun checkGps(): Boolean {
-        val gpsCheck = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return gpsCheck.isProviderEnabled(LocationManager.GPS_PROVIDER)
-    }
-    private fun bridgeInterface() {
-        // if gps On
-        if(checkGps()){
-            getLocation()
-        } else {
-            GpsDialog.startDialogSettings(requireContext(), object : GpsDialog.Clicker{
-                override fun transferUserGpsSettings(cityName: String?) {
-                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+    // Search City Functions
+    private fun onClickSearch(){
+        binding.buttonSearch.setOnClickListener {
+            SearchDialog.searchCityDialog(requireContext(), object : SearchDialog.Listener{
+                override fun searchCity(cityName: String?) {
+                    cityName?.let { it1 -> setRequestWeatherApi(it1) }
                 }
 
             })
         }
     }
 
-    private fun initLocation(){
+
+    // GPS and Geolocation Functions
+    private fun onClickUpdate(){
+        binding.buttonUpdate.setOnClickListener {
+            binding.tabLayout.selectTab(binding.tabLayout.getTabAt(0))
+            setMyLocationNow()
+        }
+    }
+
+    private fun setMyLocationNow() {
+        // if gps On
+        if(isGpsEnable()){
+            getMyLocationCoordinate()
+        } else {
+            GpsDialog.startDialogSettings(requireContext(), object : GpsDialog.Clicker{
+                override fun transferUserGpsSettings() {
+                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+            })
+        }
+    }
+
+    private fun isGpsEnable(): Boolean {
+        val gpsCheck = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return gpsCheck.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+    private fun initLocationService(){
         fLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
     }
 
-    private fun getLocation() {
+    private fun getMyLocationCoordinate() {
         val cancellationToken = CancellationTokenSource()
-
 
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
@@ -226,27 +243,7 @@ class MainFragment : Fragment() {
         ) {
             return
         }
-
-
         fLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY,cancellationToken.token).addOnCompleteListener { setRequestWeatherApi("${it.result.latitude},${it.result.longitude}") }
-    }
-
-    private fun onClickUpdate(){
-        binding.buttonUpdate.setOnClickListener {
-            binding.tabLayout.selectTab(binding.tabLayout.getTabAt(0))
-            bridgeInterface()
-        }
-    }
-
-    private fun onClickSearch(){
-        binding.buttonSearch.setOnClickListener {
-            GpsDialog.searchCityDialog(requireContext(), object : GpsDialog.Clicker{
-                override fun transferUserGpsSettings(cityName: String?) {
-                  cityName?.let { it1 -> setRequestWeatherApi(it1)}
-                }
-
-            })
-        }
     }
 
 
@@ -263,6 +260,7 @@ class MainFragment : Fragment() {
         Log.d("MyLog", "User Answer this: $it")
         }
     }
+
 
     // Instance Fragment
     companion object {
